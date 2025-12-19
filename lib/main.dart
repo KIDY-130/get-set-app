@@ -8,6 +8,7 @@ import 'components/todo_calendar_view.dart';
 import 'components/block_schedule_view.dart';
 import 'components/dump_view.dart';
 import 'components/pomodoro_timer.dart';
+import 'components/profile_view.dart';
 import 'login_page.dart';
 
 // --- 모델 클래스 정의 ---
@@ -190,6 +191,8 @@ class AuthGate extends StatelessWidget {
   }
 }
 
+// ... (위쪽 main 함수 등은 그대로 두세요) ...
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -293,7 +296,6 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 왼쪽: 제목과 설명
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,7 +309,6 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           const SizedBox(height: 4),
-
                           Row(
                             children: [
                               Flexible(
@@ -323,7 +324,6 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               const SizedBox(width: 6),
-                              // 🛸 상단 아이콘 (ufo1.png)
                               Image.asset(
                                 'assets/icon/ufo1.png',
                                 width: 20,
@@ -335,7 +335,6 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     ),
-                    // 오른쪽: 로그아웃 버튼
                     IconButton(
                       onPressed: _logout,
                       icon: const Icon(Icons.logout, color: Colors.grey),
@@ -352,28 +351,30 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
 
-      // 빠른 메모 버튼
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showQuickDumpDialog(context),
-        backgroundColor: Colors.white,
-        elevation: 4,
-        shape: const CircleBorder(),
-        child: ShaderMask(
-          shaderCallback: (bounds) => const LinearGradient(
-            colors: [Color(0xFF4ADE80), Color(0xFF60A5FA)],
-          ).createShader(bounds),
-          child: const Icon(Icons.lightbulb, color: Colors.white),
-        ),
-      ),
+      // 빠른 메모 버튼 (프로필 화면에서는 숨길 수도 있지만 일단 둡니다)
+      floatingActionButton: _currentViewIndex == 3
+          ? null // 프로필 화면에서는 버튼 숨김
+          : FloatingActionButton(
+              onPressed: () => _showQuickDumpDialog(context),
+              backgroundColor: Colors.white,
+              elevation: 4,
+              shape: const CircleBorder(),
+              child: ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [Color(0xFF4ADE80), Color(0xFF60A5FA)],
+                ).createShader(bounds),
+                child: const Icon(Icons.lightbulb, color: Colors.white),
+              ),
+            ),
 
       // 하단 네비게이션 바
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.9),
+          color: Colors.white.withOpacity(0.9),
           border: Border(top: BorderSide(color: Colors.grey[200]!)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),
@@ -404,6 +405,12 @@ class _HomePageState extends State<HomePage> {
               selectedIcon: Icon(Icons.delete),
               label: 'Dump',
             ),
+            // 👇 [추가] 4번째 탭: 내 정보 (프로필)
+            NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person),
+              label: '내 정보',
+            ),
           ],
         ),
       ),
@@ -433,11 +440,15 @@ class _HomePageState extends State<HomePage> {
           notes: _dumpNotes,
           onNotesChange: (newNotes) => setState(() => _dumpNotes = newNotes),
         );
+      case 3:
+        // 👇 [추가] 4번째 화면: 프로필 뷰
+        return const ProfileView();
       default:
         return const SizedBox.shrink();
     }
   }
 
+  // 네비게이션 인디케이터 색상
   Color _getIndicatorColor() {
     switch (_currentViewIndex) {
       case 0:
@@ -446,12 +457,16 @@ class _HomePageState extends State<HomePage> {
         return Colors.pink[100]!;
       case 2:
         return Colors.green[100]!;
+      case 3:
+        return Colors.blue[100]!; // 프로필 탭 색상
       default:
         return Colors.grey[100]!;
     }
   }
 
+  // (빠른 메모 다이얼로그 함수는 그대로 두시면 됩니다)
   void _showQuickDumpDialog(BuildContext context) {
+    // ... 기존 코드 그대로 ...
     final TextEditingController controller = TextEditingController();
     showDialog(
       context: context,
