@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart'; // [필수] 파이어베이스 코어
+import 'package:firebase_auth/firebase_auth.dart'; // [필수] 로그인 관리
 
 import 'components/todo_calendar_view.dart';
 import 'components/block_schedule_view.dart';
 import 'components/dump_view.dart';
 import 'components/pomodoro_timer.dart';
+import 'login_page.dart'; // 로그인 페이지 임포트
 
+// --- 모델 클래스 정의 ---
 class Todo {
   String id;
   String text;
@@ -48,7 +52,10 @@ class DumpNote {
   DumpNote({required this.id, required this.text, required this.timestamp});
 }
 
-void main() {
+// --- 메인 함수 ---
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // 플러터 엔진 초기화
+  await Firebase.initializeApp(); // 파이어베이스 초기화
   runApp(const MyApp());
 }
 
@@ -73,7 +80,16 @@ class MyApp extends StatelessWidget {
           surface: Colors.white,
         ),
       ),
-      home: const HomePage(),
+      // [핵심] 로그인 상태에 따라 첫 화면 결정 (StreamBuilder 사용)
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return const HomePage(); // 로그인 되어있으면 홈으로
+          }
+          return const LoginPage(); // 아니면 로그인 페이지로
+        },
+      ),
     );
   }
 }
@@ -87,11 +103,20 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentViewIndex = 0;
+
+  // 데이터 저장 변수들
   List<Todo> _todos = [];
   List<ScheduleBlock> _scheduleBlocks = [];
   List<DumpNote> _dumpNotes = [];
+
+  // 집중 모드 관련 변수
   bool _focusMode = false;
   Todo? _focusTask;
+
+  // [기능] 로그아웃
+  void _logout() {
+    FirebaseAuth.instance.signOut();
+  }
 
   void _handleStartFocus(Todo todo) {
     setState(() {
@@ -146,6 +171,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // 집중 모드일 때는 타이머 화면 표시
     if (_focusMode && _focusTask != null) {
       return PomodoroTimer(
         taskName: _focusTask!.text,
@@ -166,53 +192,74 @@ class _HomePageState extends State<HomePage> {
         child: SafeArea(
           child: Column(
             children: [
+              // --- 헤더 영역 (제목 + 로그아웃 버튼) ---
               Padding(
-                padding: const EdgeInsets.only(top: 24.0, bottom: 16.0),
-                child: Column(
+                padding: const EdgeInsets.only(
+                  top: 24.0,
+                  bottom: 16.0,
+                  left: 24,
+                  right: 24,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'GET SET',
-                      style: TextStyle(
-                        fontSize: 27,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFC084FC),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-
-                    // [수정] 이모지 텍스트를 Row로 변경하여 이미지와 함께 배치
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
+                    // 왼쪽: 제목과 설명
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '우주로 날아간 집중력을 지구로 소환 중...',
+                        const Text(
+                          'GET SET',
                           style: TextStyle(
-                            fontSize: 14,
-                            color: const Color(
-                              0xFFC084FC,
-                            ).withValues(alpha: 0.7),
+                            fontSize: 27,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFC084FC),
                           ),
                         ),
-                        const SizedBox(width: 6), // 텍스트와 이미지 사이 간격
-                        Image.asset(
-                          'assets/icon/ufo1.png', // 안테나 아이콘 경로
-                          width: 18,
-                          height: 18,
-                          fit: BoxFit.contain,
-                          color: const Color(0xFFC084FC).withValues(
-                            alpha: 0.7,
-                          ), // (선택사항) 텍스트 색상과 깔맞춤 하려면 이 줄을 유지, 원본 색상을 쓰려면 이 줄 삭제
+                        const SizedBox(height: 4),
+                        // 안테나 아이콘 이미지 + 텍스트
+                        Row(
+                          children: [
+                            Text(
+                              '우주로 날아간 집중력을 지구로 소환 중...',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: const Color(
+                                  0xFFC084FC,
+                                ).withValues(alpha: 0.7),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Image.asset(
+                              'assets/icon/antenna.png', // 안테나 아이콘
+                              width: 18,
+                              height: 18,
+                              fit: BoxFit.contain,
+                              color: const Color(
+                                0xFFC084FC,
+                              ).withValues(alpha: 0.7),
+                            ),
+                          ],
                         ),
                       ],
+                    ),
+                    // 오른쪽: 로그아웃 버튼
+                    IconButton(
+                      onPressed: _logout,
+                      icon: const Icon(Icons.logout, color: Colors.grey),
+                      tooltip: "로그아웃",
                     ),
                   ],
                 ),
               ),
+
+              // --- 메인 콘텐츠 영역 ---
               Expanded(child: _buildCurrentView()),
             ],
           ),
         ),
       ),
+
+      // 빠른 메모 버튼
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showQuickDumpDialog(context),
         backgroundColor: Colors.white,
@@ -225,6 +272,8 @@ class _HomePageState extends State<HomePage> {
           child: const Icon(Icons.lightbulb, color: Colors.white),
         ),
       ),
+
+      // 하단 네비게이션 바
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.9),
@@ -268,6 +317,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // 화면 전환 로직
   Widget _buildCurrentView() {
     switch (_currentViewIndex) {
       case 0:
@@ -295,6 +345,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // 네비게이션 인디케이터 색상
   Color _getIndicatorColor() {
     switch (_currentViewIndex) {
       case 0:
@@ -308,6 +359,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // 빠른 메모 다이얼로그
   void _showQuickDumpDialog(BuildContext context) {
     final TextEditingController controller = TextEditingController();
     showDialog(

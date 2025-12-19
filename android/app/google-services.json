@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "564950716502",
+    "project_id": "get-set-app",
+    "storage_bucket": "get-set-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:564950716502:android:0756185d071c51a27e6bf7",
+        "android_client_info": {
+          "package_name": "com.example.GET_SET_APP"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfLDjVjLqPVK0Ac5Z1Rnjs6kV5KNrgv-4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
