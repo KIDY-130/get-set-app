@@ -7,7 +7,7 @@ import 'components/todo_calendar_view.dart';
 import 'components/block_schedule_view.dart';
 import 'components/dump_view.dart';
 import 'components/pomodoro_timer.dart';
-import 'login_page.dart'; // [필수] 로그인 페이지 파일이 있어야 합니다.
+import 'login_page.dart';
 
 // --- 모델 클래스 정의 ---
 class Todo {
@@ -55,7 +55,7 @@ class DumpNote {
 // --- 메인 함수 ---
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // 파이어베이스 시작
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -80,14 +80,13 @@ class MyApp extends StatelessWidget {
           surface: Colors.white,
         ),
       ),
-      // [핵심] 로그인 상태 감지: 로그인이 안 되어있으면 LoginPage로 보냅니다.
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return const HomePage(); // 로그인 됨 -> 홈 화면
+            return const HomePage();
           }
-          return const LoginPage(); // 로그인 안 됨 -> 로그인 화면
+          return const LoginPage();
         },
       ),
     );
@@ -109,7 +108,6 @@ class _HomePageState extends State<HomePage> {
   bool _focusMode = false;
   Todo? _focusTask;
 
-  // [기능] 로그아웃
   void _logout() {
     FirebaseAuth.instance.signOut();
   }
@@ -186,7 +184,7 @@ class _HomePageState extends State<HomePage> {
         child: SafeArea(
           child: Column(
             children: [
-              // [수정된 헤더] 로그아웃 버튼 추가됨
+              // --- 헤더 영역 ---
               Padding(
                 padding: const EdgeInsets.only(
                   top: 24.0,
@@ -196,48 +194,52 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'GET SET',
-                          style: TextStyle(
-                            fontSize: 27,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFFC084FC),
+                    // 왼쪽: 제목과 설명
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'GET SET',
+                            style: TextStyle(
+                              fontSize: 27,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFC084FC),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                '우주로 날아간 집중력을 지구로 소환 중...',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: const Color(
-                                    0xFFC084FC,
-                                  ).withValues(alpha: 0.7),
+                          const SizedBox(height: 4),
+
+                          // 👇 [수정됨] 이미지(ufo1.png)와 텍스트를 함께 표시하는 Row
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  '우주로 날아간 집중력을 지구로 소환 중...',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: const Color(
+                                      0xFFC084FC,
+                                    ).withOpacity(0.7),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            const SizedBox(width: 6),
-                            Image.asset(
-                              'assets/icon/ufo1.png',
-                              width: 18,
-                              height: 18,
-                              fit: BoxFit.contain,
-                              color: const Color(
-                                0xFFC084FC,
-                              ).withValues(alpha: 0.7),
-                            ),
-                          ],
-                        ),
-                      ],
+                              const SizedBox(width: 6),
+                              // 🛸 사용자 지정 아이콘 (ufo1.png)
+                              Image.asset(
+                                'assets/icon/ufo1.png', // 파일명 확인 필수!
+                                width: 20,
+                                height: 20,
+                                fit: BoxFit.contain,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    // 👉 로그아웃 버튼
+                    // 오른쪽: 로그아웃 버튼
                     IconButton(
                       onPressed: _logout,
                       icon: const Icon(Icons.logout, color: Colors.grey),
@@ -246,11 +248,15 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
+
+              // --- 메인 콘텐츠 영역 ---
               Expanded(child: _buildCurrentView()),
             ],
           ),
         ),
       ),
+
+      // 빠른 메모 버튼
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showQuickDumpDialog(context),
         backgroundColor: Colors.white,
@@ -263,6 +269,8 @@ class _HomePageState extends State<HomePage> {
           child: const Icon(Icons.lightbulb, color: Colors.white),
         ),
       ),
+
+      // 하단 네비게이션 바
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.9),
@@ -306,6 +314,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // 화면 전환 로직
   Widget _buildCurrentView() {
     switch (_currentViewIndex) {
       case 0:
@@ -333,6 +342,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // 네비게이션 인디케이터 색상
   Color _getIndicatorColor() {
     switch (_currentViewIndex) {
       case 0:
@@ -346,6 +356,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // 빠른 메모 다이얼로그
   void _showQuickDumpDialog(BuildContext context) {
     final TextEditingController controller = TextEditingController();
     showDialog(

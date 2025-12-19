@@ -38,7 +38,6 @@ class _LoginPageState extends State<LoginPage> {
     } on FirebaseAuthException catch (e) {
       String message = "오류가 발생했습니다.";
 
-      // [수정] 중괄호 { }를 모두 추가했습니다.
       if (e.code == 'user-not-found') {
         message = "존재하지 않는 계정입니다.";
       } else if (e.code == 'wrong-password') {
@@ -69,16 +68,18 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.lock_outline,
-                size: 80,
-                color: Color(0xFFC084FC),
+              // 🛸 [여기!] 자물쇠 아이콘을 UFO 이미지로 교체했습니다.
+              Image.asset(
+                'assets/icon/ufo.png', // 👈 파일명을 확인해주세요! (ufo.png)
+                width: 80, // 크기 조절 (기존 아이콘과 비슷하게 80으로 설정)
+                height: 80,
+                fit: BoxFit.contain,
               ),
               const SizedBox(height: 16),
               Text(
-                _isLogin ? "GET SET 로그인" : "회원가입",
+                _isLogin ? " GET SET " : "회원가입",
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 30,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFC084FC),
                 ),
