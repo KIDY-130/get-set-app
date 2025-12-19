@@ -8,23 +8,58 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+// 👇 [핵심 1] 애니메이션을 쓰려면 'with SingleTickerProviderStateMixin'을 꼭 붙여야 합니다!
+class _LoginPageState extends State<LoginPage>
+    with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLogin = true; // 로그인 모드인지 회원가입 모드인지 확인
+  bool _isLogin = true;
   bool _isLoading = false;
+
+  // 👇 [핵심 2] 애니메이션을 제어할 변수들 선언
+  late AnimationController _animationController;
+  late Animation<Offset> _hoverAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 👇 [핵심 3] 애니메이션 설정 (2초 간격으로 위아래 반복)
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 2), // 속도 조절: 숫자가 클수록 느려짐
+      vsync: this,
+    )..repeat(reverse: true); // reverse: true -> 위로 갔다가 다시 아래로 내려옴 (무한 반복)
+
+    _hoverAnimation =
+        Tween<Offset>(
+          begin: Offset.zero, // 시작 위치 (제자리)
+          end: const Offset(0, -0.15), // 끝 위치 (위로 살짝 이동, 0.15만큼)
+        ).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeInOut, // 부드럽게 출발하고 멈추는 곡선 효과
+          ),
+        );
+  }
+
+  @override
+  void dispose() {
+    // 👇 [중요] 화면이 꺼질 때 애니메이션 기계도 같이 꺼줘야 메모리가 안 샙니다.
+    _animationController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   Future<void> _submit() async {
     setState(() => _isLoading = true);
     try {
       if (_isLogin) {
-        // 로그인 시도
         await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
       } else {
-        // 회원가입 시도
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
@@ -37,7 +72,6 @@ class _LoginPageState extends State<LoginPage> {
       }
     } on FirebaseAuthException catch (e) {
       String message = "오류가 발생했습니다.";
-
       if (e.code == 'user-not-found') {
         message = "존재하지 않는 계정입니다.";
       } else if (e.code == 'wrong-password') {
@@ -68,12 +102,15 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // 🛸 [여기!] 자물쇠 아이콘을 UFO 이미지로 교체했습니다.
-              Image.asset(
-                'assets/icon/ufo.png', // 👈 파일명을 확인해주세요! (ufo.png)
-                width: 80, // 크기 조절 (기존 아이콘과 비슷하게 80으로 설정)
-                height: 80,
-                fit: BoxFit.contain,
+              // 👇 [핵심 4] UFO 이미지를 SlideTransition으로 감싸서 움직이게 만듦
+              SlideTransition(
+                position: _hoverAnimation,
+                child: Image.asset(
+                  'assets/icon/ufo.png',
+                  width: 100, // 조금 더 잘 보이게 크기를 80 -> 100으로 키웠습니다!
+                  height: 100,
+                  fit: BoxFit.contain,
+                ),
               ),
               const SizedBox(height: 16),
               Text(

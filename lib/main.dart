@@ -1,3 +1,4 @@
+import 'dart:async'; // [필수] 타이머 사용을 위해 추가
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -80,15 +81,111 @@ class MyApp extends StatelessWidget {
           surface: Colors.white,
         ),
       ),
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return const HomePage();
-          }
-          return const LoginPage();
-        },
+      // 👇 [변경] 앱을 켜면 무조건 'IntroPage'를 먼저 보여줍니다.
+      home: const IntroPage(),
+    );
+  }
+}
+
+// 🎬 [신규 추가] 움직이는 UFO가 나오는 인트로 화면
+class IntroPage extends StatefulWidget {
+  const IntroPage({super.key});
+
+  @override
+  State<IntroPage> createState() => _IntroPageState();
+}
+
+class _IntroPageState extends State<IntroPage>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 1. UFO 둥둥 떠다니는 애니메이션 설정
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _animation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0, -0.1), // 위로 살짝 이동
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+    // 2. 5초 뒤에 다음 화면(로그인 체크)으로 이동
+    Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const AuthGate()),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 🛸 움직이는 UFO
+            SlideTransition(
+              position: _animation,
+              child: Image.asset(
+                'assets/icon/ufo.png', // 이미지 경로 확인!
+                width: 120,
+                height: 120,
+                fit: BoxFit.contain,
+              ),
+            ),
+            const SizedBox(height: 20),
+            // 로고 텍스트
+            const Text(
+              'GET SET',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFC084FC),
+                letterSpacing: 2.0,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              '우주급 집중력을 로딩 중...',
+              style: TextStyle(fontSize: 14, color: Colors.grey[400]),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+// 🚪 [신규 추가] 로그인 여부를 확인하는 문 (기존 home 로직 이동)
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return const HomePage(); // 로그인 되어있음 -> 홈으로
+        }
+        return const LoginPage(); // 안 되어있음 -> 로그인 페이지로
+      },
     );
   }
 }
@@ -211,7 +308,6 @@ class _HomePageState extends State<HomePage> {
                           ),
                           const SizedBox(height: 4),
 
-                          // 👇 [수정됨] 이미지(ufo1.png)와 텍스트를 함께 표시하는 Row
                           Row(
                             children: [
                               Flexible(
@@ -227,9 +323,9 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               const SizedBox(width: 6),
-                              // 🛸 사용자 지정 아이콘 (ufo1.png)
+                              // 🛸 상단 아이콘 (ufo1.png)
                               Image.asset(
-                                'assets/icon/ufo1.png', // 파일명 확인 필수!
+                                'assets/icon/ufo1.png',
                                 width: 20,
                                 height: 20,
                                 fit: BoxFit.contain,
@@ -342,7 +438,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // 네비게이션 인디케이터 색상
   Color _getIndicatorColor() {
     switch (_currentViewIndex) {
       case 0:
@@ -356,7 +451,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // 빠른 메모 다이얼로그
   void _showQuickDumpDialog(BuildContext context) {
     final TextEditingController controller = TextEditingController();
     showDialog(
