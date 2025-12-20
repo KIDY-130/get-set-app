@@ -10,7 +10,7 @@ class AIService {
     if (todos.isEmpty) return todos;
 
     // 1. 모델 설정 (무료 등급에서도 성능이 좋은 gemini-1.5-flash 권장)
-    final model = GenerativeModel(model: 'gemini-2.0-flash', apiKey: _apiKey);
+    final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: _apiKey);
 
     // 2. 프롬프트 작성
     String todoData = todos.map((e) => "ID:${e.id}, 내용:${e.text}").join("\n");
