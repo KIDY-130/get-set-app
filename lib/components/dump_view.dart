@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../main.dart'; // DumpNote 모델
+import '../main.dart';
 
 class DumpView extends StatefulWidget {
   final List<DumpNote> notes;
@@ -53,18 +53,16 @@ class _DumpViewState extends State<DumpView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // [수정] 기존 Text 위젯을 Row로 변경하여 이미지와 텍스트를 나란히 배치
             Row(
               children: [
                 // 1. 아이콘 이미지
                 Image.asset(
-                  'assets/icon/trash.png', // 준비하신 이미지 파일 경로
-                  width: 24, // 아이콘 크기 (글자 크기에 맞춰 조절)
+                  'assets/icon/trash.png',
+                  width: 24,
                   height: 24,
                   fit: BoxFit.contain,
                 ),
-                const SizedBox(width: 8), // 이미지와 글자 사이 간격
-                // 2. 제목 텍스트 (이모지 제거됨)
+                const SizedBox(width: 8),
                 const Text(
                   "생각 쓰레기통",
                   style: TextStyle(
@@ -82,7 +80,6 @@ class _DumpViewState extends State<DumpView> {
             ),
             const SizedBox(height: 16),
 
-            // 입력 영역
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(

@@ -82,22 +82,20 @@ class _BlockScheduleViewState extends State<BlockScheduleView> {
         ),
         child: Column(
           children: [
-            // 1. 헤더 (고정)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // [수정] 이모지 텍스트 대신 Row(이미지 + 텍스트) 사용
                 Row(
                   children: [
                     Image.asset(
-                      'assets/icon/clock.png', // 준비한 시계 아이콘 경로
+                      'assets/icon/clock.png',
                       width: 24,
                       height: 24,
                       fit: BoxFit.contain,
                     ),
                     const SizedBox(width: 8),
                     const Text(
-                      "타임 블록", // 이모지 제거됨
+                      "타임 블록",
                       style: TextStyle(
                         color: Colors.pink,
                         fontSize: 18,
@@ -124,7 +122,6 @@ class _BlockScheduleViewState extends State<BlockScheduleView> {
               ],
             ),
 
-            // 2. 설정 패널
             if (_showSettings)
               Container(
                 padding: const EdgeInsets.all(16),
@@ -151,7 +148,6 @@ class _BlockScheduleViewState extends State<BlockScheduleView> {
                 ),
               ),
 
-            // 3. 추가 폼
             if (_showAddForm)
               Container(
                 padding: const EdgeInsets.all(16),

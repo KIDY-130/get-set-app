@@ -46,11 +46,11 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
     super.dispose();
   }
 
-  // 🔊 알람 재생 함수
+  // 알람 재생
   Future<void> _playAlarm() async {
     if (_isSoundOn) {
       try {
-        await _audioPlayer.stop(); // 겹치지 않게 기존 소리 중지
+        await _audioPlayer.stop();
         await _audioPlayer.play(AssetSource('sounds/$_selectedSound'));
       } catch (e) {
         debugPrint("알람 재생 오류: $e");
@@ -65,7 +65,7 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
       if (_seconds == 0) {
         if (_minutes == 0) {
           timer.cancel();
-          _playAlarm(); // 알람 재생
+          _playAlarm();
 
           setState(() {
             _isActive = false;
@@ -115,7 +115,6 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
     });
   }
 
-  // ⚙️ 설정 다이얼로그 (여기에 미리듣기 기능이 있습니다!)
   void _showSettingsDialog() {
     showDialog(
       context: context,
@@ -153,15 +152,11 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
                       }).toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          // 1. 선택된 값 업데이트
                           setState(() => _selectedSound = value);
                           setStateDialog(() {});
 
-                          // 2. ✨ [중요] 미리듣기 재생! ✨
-                          _audioPlayer.stop(); // 기존 소리 끄고
-                          _audioPlayer.play(
-                            AssetSource('sounds/$value'),
-                          ); // 바로 재생
+                          _audioPlayer.stop();
+                          _audioPlayer.play(AssetSource('sounds/$value'));
                         }
                       },
                     ),
@@ -171,7 +166,7 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    _audioPlayer.stop(); // 닫을 때 소리 끄기
+                    _audioPlayer.stop();
                     Navigator.pop(context);
                   },
                   child: const Text("확인", style: TextStyle(color: Colors.grey)),
@@ -195,14 +190,10 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          // ✨ 추천해주신 '미드나잇 블룸' 그라데이션 적용
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFa18cd1), // 부드러운 바이올렛
-              Color(0xFFfbc2eb), // 로즈 핑크
-            ],
+            colors: [Color(0xFFa18cd1), Color(0xFFfbc2eb)],
           ),
         ),
         child: SafeArea(
@@ -251,7 +242,6 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
                 ),
                 child: Column(
                   children: [
-                    // 상단 라벨 및 설정 아이콘
                     Stack(
                       alignment: Alignment.center,
                       children: [

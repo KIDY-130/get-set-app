@@ -9,18 +9,15 @@ class ProfileView extends StatefulWidget {
 }
 
 class _ProfileViewState extends State<ProfileView> {
-  // 사용자의 현재 닉네임 (기본값은 이메일 앞부분)
   String _nickname = "";
   final user = FirebaseAuth.instance.currentUser;
 
   @override
   void initState() {
     super.initState();
-    // 초기 닉네임을 이메일 아이디로 설정
     _nickname = user?.email?.split('@')[0] ?? "우주 여행자";
   }
 
-  // 닉네임 수정 다이얼로그 띄우기
   void _editNickname() {
     final TextEditingController controller = TextEditingController(
       text: _nickname,
@@ -42,7 +39,7 @@ class _ProfileViewState extends State<ProfileView> {
               borderSide: BorderSide(color: Color(0xFFC084FC)),
             ),
           ),
-          maxLength: 10, // 닉네임 길이 제한
+          maxLength: 10,
         ),
         actions: [
           TextButton(
@@ -80,15 +77,13 @@ class _ProfileViewState extends State<ProfileView> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 20),
-          // 🛸 프로필 이미지 영역
           _buildProfileImage(),
           const SizedBox(height: 24),
 
-          // 닉네임 표시 및 수정 버튼
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(width: 40), // 아이콘과 균형을 맞추기 위한 빈 공간
+              const SizedBox(width: 40),
               Text(
                 _nickname,
                 style: const TextStyle(
@@ -111,7 +106,6 @@ class _ProfileViewState extends State<ProfileView> {
 
           const SizedBox(height: 32),
 
-          // 📊 활동 통계 카드
           Row(
             children: [
               _buildStatCard(
@@ -137,7 +131,7 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  // --- UI 컴포넌트들 ---
+  //  UI
 
   Widget _buildProfileImage() {
     return Container(

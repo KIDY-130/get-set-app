@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
-import '../services/ai_service.dart'; // [추가] 아까 만든 AI 서비스 파일
+import '../services/ai_service.dart';
 
 class TodoCalendarView extends StatefulWidget {
   final List<Todo> todos;
@@ -77,7 +77,7 @@ class _TodoList extends StatefulWidget {
 
 class _TodoListState extends State<_TodoList> {
   final TextEditingController _controller = TextEditingController();
-  bool _isAiLoading = false; // [추가] AI 로딩 상태 관리
+  bool _isAiLoading = false;
 
   void _addTodo() {
     if (_controller.text.trim().isNotEmpty) {
@@ -106,15 +106,12 @@ class _TodoListState extends State<_TodoList> {
     setState(() => _isAiLoading = true);
 
     try {
-      // 1. AI에게 현재 날짜의 할 일들을 보내 정렬 및 우선순위(별) 데이터 받기
       List<Todo> aiSortedTodos = await AIService.sortTodosWithAI(todosForDate);
 
-      // 2. 다른 날짜의 할 일들은 그대로 유지
       List<Todo> otherTodos = widget.todos
           .where((t) => t.date != widget.selectedDate)
           .toList();
 
-      // 3. 합쳐서 업데이트 (aiSortedTodos는 이미 AI가 정렬한 순서대로임)
       widget.onTodosChange([...otherTodos, ...aiSortedTodos]);
 
       if (mounted) {
@@ -173,7 +170,6 @@ class _TodoListState extends State<_TodoList> {
                   ),
                 ],
               ),
-              // [추가] AI 정렬 버튼 위치
               if (todosForDate.isNotEmpty)
                 TextButton.icon(
                   onPressed: _isAiLoading ? null : _handleAiSort,
@@ -214,7 +210,6 @@ class _TodoListState extends State<_TodoList> {
           ),
           const SizedBox(height: 16),
 
-          // (중략 - 기존 중요 할 일 카드 영역)
           if (realPriorityTodo != null) _buildPriorityCard(realPriorityTodo),
 
           Row(
@@ -284,7 +279,6 @@ class _TodoListState extends State<_TodoList> {
     );
   }
 
-  // 가독성을 위해 위젯 분리
   Widget _buildPriorityCard(Todo realPriorityTodo) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),

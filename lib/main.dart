@@ -1,4 +1,4 @@
-import 'dart:async'; // [필수] 타이머 사용을 위해 추가
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -11,7 +11,6 @@ import 'components/pomodoro_timer.dart';
 import 'components/profile_view.dart';
 import 'login_page.dart';
 
-// --- 모델 클래스 정의 ---
 class Todo {
   String id;
   String text;
@@ -54,7 +53,6 @@ class DumpNote {
   DumpNote({required this.id, required this.text, required this.timestamp});
 }
 
-// --- 메인 함수 ---
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -82,13 +80,11 @@ class MyApp extends StatelessWidget {
           surface: Colors.white,
         ),
       ),
-      // 👇 [변경] 앱을 켜면 무조건 'IntroPage'를 먼저 보여줍니다.
       home: const IntroPage(),
     );
   }
 }
 
-// 🎬 [신규 추가] 움직이는 UFO가 나오는 인트로 화면
 class IntroPage extends StatefulWidget {
   const IntroPage({super.key});
 
@@ -105,7 +101,6 @@ class _IntroPageState extends State<IntroPage>
   void initState() {
     super.initState();
 
-    // 1. UFO 둥둥 떠다니는 애니메이션 설정
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
@@ -113,10 +108,9 @@ class _IntroPageState extends State<IntroPage>
 
     _animation = Tween<Offset>(
       begin: Offset.zero,
-      end: const Offset(0, -0.1), // 위로 살짝 이동
+      end: const Offset(0, -0.1),
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
-    // 2. 5초 뒤에 다음 화면(로그인 체크)으로 이동
     Timer(const Duration(seconds: 3), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
@@ -140,18 +134,16 @@ class _IntroPageState extends State<IntroPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 🛸 움직이는 UFO
             SlideTransition(
               position: _animation,
               child: Image.asset(
-                'assets/icon/ufo.png', // 이미지 경로 확인!
+                'assets/icon/ufo.png',
                 width: 120,
                 height: 120,
                 fit: BoxFit.contain,
               ),
             ),
             const SizedBox(height: 20),
-            // 로고 텍스트
             const Text(
               'GET SET',
               style: TextStyle(
@@ -173,7 +165,6 @@ class _IntroPageState extends State<IntroPage>
   }
 }
 
-// 🚪 [신규 추가] 로그인 여부를 확인하는 문 (기존 home 로직 이동)
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -183,15 +174,13 @@ class AuthGate extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return const HomePage(); // 로그인 되어있음 -> 홈으로
+          return const HomePage();
         }
-        return const LoginPage(); // 안 되어있음 -> 로그인 페이지로
+        return const LoginPage();
       },
     );
   }
 }
-
-// ... (위쪽 main 함수 등은 그대로 두세요) ...
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -284,7 +273,6 @@ class _HomePageState extends State<HomePage> {
         child: SafeArea(
           child: Column(
             children: [
-              // --- 헤더 영역 ---
               Padding(
                 padding: const EdgeInsets.only(
                   top: 24.0,
@@ -344,16 +332,14 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
 
-              // --- 메인 콘텐츠 영역 ---
               Expanded(child: _buildCurrentView()),
             ],
           ),
         ),
       ),
 
-      // 빠른 메모 버튼 (프로필 화면에서는 숨길 수도 있지만 일단 둡니다)
       floatingActionButton: _currentViewIndex == 3
-          ? null // 프로필 화면에서는 버튼 숨김
+          ? null
           : FloatingActionButton(
               onPressed: () => _showQuickDumpDialog(context),
               backgroundColor: Colors.white,
@@ -367,7 +353,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-      // 하단 네비게이션 바
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.9),
@@ -405,7 +390,6 @@ class _HomePageState extends State<HomePage> {
               selectedIcon: Icon(Icons.delete),
               label: 'Dump',
             ),
-            // 👇 [추가] 4번째 탭: 내 정보 (프로필)
             NavigationDestination(
               icon: Icon(Icons.person_outline),
               selectedIcon: Icon(Icons.person),
@@ -417,7 +401,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // 화면 전환 로직
   Widget _buildCurrentView() {
     switch (_currentViewIndex) {
       case 0:
@@ -441,14 +424,12 @@ class _HomePageState extends State<HomePage> {
           onNotesChange: (newNotes) => setState(() => _dumpNotes = newNotes),
         );
       case 3:
-        // 👇 [추가] 4번째 화면: 프로필 뷰
         return const ProfileView();
       default:
         return const SizedBox.shrink();
     }
   }
 
-  // 네비게이션 인디케이터 색상
   Color _getIndicatorColor() {
     switch (_currentViewIndex) {
       case 0:
@@ -458,15 +439,13 @@ class _HomePageState extends State<HomePage> {
       case 2:
         return Colors.green[100]!;
       case 3:
-        return Colors.blue[100]!; // 프로필 탭 색상
+        return Colors.blue[100]!;
       default:
         return Colors.grey[100]!;
     }
   }
 
-  // (빠른 메모 다이얼로그 함수는 그대로 두시면 됩니다)
   void _showQuickDumpDialog(BuildContext context) {
-    // ... 기존 코드 그대로 ...
     final TextEditingController controller = TextEditingController();
     showDialog(
       context: context,
